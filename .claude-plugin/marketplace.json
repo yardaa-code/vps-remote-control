@@ -1,0 +1,14 @@
+{
+  "name": "vps-remote-control",
+  "owner": {
+    "name": "yardaa-code"
+  },
+  "description": "Claude Code nonstop na vlastním serveru, ovládaný z mobilu.",
+  "plugins": [
+    {
+      "name": "vps-remote-control",
+      "source": "./",
+      "description": "Průvodce nastavením vlastního serveru, na kterém nonstop běží Claude Code s Remote Control (ovládání z mobilu)."
+    }
+  ]
+}
