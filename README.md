@@ -4,11 +4,12 @@
 (VPS) running Claude Code 24/7 with **Remote Control**, so you can use Claude from the mobile app even
 with your computer switched off. It covers SSH keys (Mac and Windows), basic hardening (key-only login,
 firewall, fail2ban, no root), a service that restarts Claude after a crash, a nightly restart, and a daily
-check that warns you before the Claude login expires (via ntfy, Gmail or Resend). Claude does the
-technical work, you only order the server and log in.
+check that warns you before the Claude login expires (via ntfy, Gmail or Resend), and optionally
+connects the server to GitHub. Claude does the technical work, you only order the server and log in.
 
-**Note:** the guide is written in Czech and recommends a Czech provider (Forpsi Classic VPS Mini+,
-Ubuntu 24.04). Any VPS with Ubuntu 24.04 and root access works.
+**Note:** Claude talks to you in your language, the guide files themselves are in Czech. The recommended
+provider is Czech (Forpsi Classic VPS Mini+, Ubuntu 24.04), but any VPS with Ubuntu 24.04 and root
+access works.
 
 Install: tell Claude Code *"Install the skill from https://github.com/yardaa-code/vps-remote-control"*,
 or run `/plugin marketplace add yardaa-code/vps-remote-control` and
@@ -53,6 +54,8 @@ Po instalaci restartuj Claude Code a napiš třeba **„chci Claude na serveru, 
 - **Hlídač přihlášení:** přihlášení Claude vyprší zhruba po 4 týdnech a Remote Control pak potichu
   přestane fungovat. Hlídač tě včas upozorní přes **ntfy** (notifikace do mobilu), **Gmail**, nebo
   **Resend**, podle tvé volby.
+- **GitHub (volitelně):** Claude na serveru pak z mobilu stáhne tvůj projekt, upraví ho a otevře pull
+  request. Do commitů se zapíše anonymní adresa od GitHubu, ne tvůj e-mail.
 
 ## Dobré vědět
 - Server je **jen pro Claude**. Claude na něm smí spouštět příkazy, nedávej na něj nic důležitého.

@@ -6,7 +6,8 @@ přestane fungovat. Hlídač jednou denně (z cronu) zjistí `claude auth status
 a když je Claude odhlášený nebo přihlášení vyprší do 5 dní, pošle upozornění
 přes ntfy (appka v mobilu), Gmail, nebo Resend.
 
-Nastavení (bez hesel): ~/.config/claude-hlidac.json
+Nastavení (bez hesel): ~/.config/claude-hlidac.json, jazyk upozornění
+"jazyk": "cs" (výchozí) nebo "en".
 Heslo nebo klíč (jen Gmail a Resend): ~/.config/claude-hlidac-tajne
 
   claude-hlidac.py               běžná kontrola (spouští ji cron)
@@ -23,26 +24,71 @@ TAJNE = os.path.join(DOMOV, ".config", "claude-hlidac-tajne")
 CLAUDE = os.environ.get("CLAUDE_BIN", os.path.join(DOMOV, ".local", "bin", "claude"))
 UA = "claude-vps-hlidac/1.0"  # Resend bez hlavičky User-Agent vrací 403
 
+TEXTY = {
+    "cs": {
+        "nejde": "Nejde zjistit stav přihlášení Claude (příkaz `claude auth status` selhal).",
+        "odhlaseny": "Claude je ODHLÁŠENÝ, Remote Control nefunguje. Je potřeba se znovu přihlásit.",
+        "bez_data": "Přihlášený, datum vypršení neznámé.",
+        "plati": "Přihlášený, vyprší {datum} (za {dni} dní).",
+        "vyprsi": "Přihlášení Claude vyprší za {dni} dní ({datum}). Je potřeba se znovu přihlásit.",
+        "titulek": "Claude na serveru {nazev}: je potřeba se přihlásit",
+        "zkouska_titulek": "Claude na serveru {nazev}: zkouška hlídače",
+        "zkouska_text": "Tohle je zkušební upozornění. Když ho vidíš, hlídač přihlášení funguje.",
+        "odeslano": "Zkušební upozornění odesláno.",
+        "nenastaveno": "Hlídač ještě není nastavený (chybí {soubor}).",
+        "vse_ok": "nic, vše v pořádku",
+        "zadej": "Vlož heslo nebo klíč (při psaní není nic vidět) a stiskni Enter: ",
+        "prazdne": "Nic nezadáno, nic jsem neuložil.",
+        "ulozeno": "Uloženo do {soubor} (čitelné jen pro tebe).",
+    },
+    "en": {
+        "nejde": "Cannot check the Claude login status (`claude auth status` failed).",
+        "odhlaseny": "Claude is LOGGED OUT, Remote Control is not working. Please log in again.",
+        "bez_data": "Logged in, expiry date unknown.",
+        "plati": "Logged in, expires {datum} (in {dni} days).",
+        "vyprsi": "The Claude login expires in {dni} days ({datum}). Please log in again.",
+        "titulek": "Claude on server {nazev}: login needed",
+        "zkouska_titulek": "Claude on server {nazev}: watchdog test",
+        "zkouska_text": "This is a test notification. If you can see it, the login watchdog works.",
+        "odeslano": "Test notification sent.",
+        "nenastaveno": "The watchdog is not set up yet ({soubor} is missing).",
+        "vse_ok": "nothing, all good",
+        "zadej": "Paste the password or key (nothing shows while typing) and press Enter: ",
+        "prazdne": "Nothing entered, nothing saved.",
+        "ulozeno": "Saved to {soubor} (readable only by you).",
+    },
+}
 
-def stav():
+
+def nacti_nastaveni():
+    try:
+        with open(NASTAVENI) as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return None
+
+
+def texty(n):
+    return TEXTY.get((n or {}).get("jazyk", "cs"), TEXTY["cs"])
+
+
+def stav(t=TEXTY["cs"]):
     """Vrátí (problém nebo None, popis stavu)."""
     try:
         vystup = subprocess.run([CLAUDE, "auth", "status"], capture_output=True, text=True, timeout=60).stdout
         d = json.loads(vystup)
     except Exception:
-        z = "Nejde zjistit stav přihlášení Claude (příkaz `claude auth status` selhal)."
-        return z, z
+        return t["nejde"], t["nejde"]
     if not d.get("loggedIn"):
-        z = "Claude je ODHLÁŠENÝ, Remote Control nefunguje. Je potřeba se znovu přihlásit."
-        return z, z
+        return t["odhlaseny"], t["odhlaseny"]
     exp = d.get("loginExpiresAt")
     if not exp:
-        return None, "Přihlášený, datum vypršení neznámé."
+        return None, t["bez_data"]
     konec = datetime.datetime.fromisoformat(exp.replace("Z", "+00:00"))
     zbyva = (konec - datetime.datetime.now(datetime.timezone.utc)).days
-    popis = f"Přihlášený, vyprší {exp[:10]} (za {zbyva} dní)."
+    popis = t["plati"].format(datum=exp[:10], dni=zbyva)
     if zbyva < 5:
-        return f"Přihlášení Claude vyprší za {zbyva} dní ({exp[:10]}). Je potřeba se znovu přihlásit.", popis
+        return t["vyprsi"].format(datum=exp[:10], dni=zbyva), popis
     return None, popis
 
 
@@ -77,39 +123,36 @@ def posli(n, titulek, text):
         sys.exit(f"Neznámý způsob upozornění {zpusob!r} v {NASTAVENI} (čekám ntfy, gmail nebo resend).")
 
 
-def uloz_heslo():
-    heslo = getpass.getpass("Vlož heslo nebo klíč (při psaní není nic vidět) a stiskni Enter: ").strip()
+def uloz_heslo(t):
+    heslo = getpass.getpass(t["zadej"]).strip()
     if not heslo:
-        sys.exit("Nic nezadáno, nic jsem neuložil.")
+        sys.exit(t["prazdne"])
     os.makedirs(os.path.dirname(TAJNE), exist_ok=True)
     fd = os.open(TAJNE, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w") as f:
         f.write(heslo + "\n")
-    print(f"Uloženo do {TAJNE} (čitelné jen pro tebe).")
+    print(t["ulozeno"].format(soubor=TAJNE))
 
 
 def main(args):
+    n = nacti_nastaveni()
+    t = texty(n)
     if "--uloz-heslo" in args:
-        return uloz_heslo()
-    try:
-        with open(NASTAVENI) as f:
-            n = json.load(f)
-    except FileNotFoundError:
-        print(f"Hlídač ještě není nastavený (chybí {NASTAVENI}).")
+        return uloz_heslo(t)
+    if n is None:
+        print(t["nenastaveno"].format(soubor=NASTAVENI))
         return 1 if "--zkouska" in args else 0
     nazev = n.get("nazev_serveru", "VPS")
-    titulek = f"Claude na serveru {nazev}: je potřeba se přihlásit"
     if "--zkouska" in args:
-        posli(n, f"Claude na serveru {nazev}: zkouška hlídače",
-              "Tohle je zkušební upozornění. Když ho vidíš, hlídač přihlášení funguje.")
-        print("Zkušební upozornění odesláno.")
+        posli(n, t["zkouska_titulek"].format(nazev=nazev), t["zkouska_text"])
+        print(t["odeslano"])
         return 0
-    problem, popis = stav()
+    problem, popis = stav(t)
     if "--nanecisto" in args:
         print("STAV:", popis)
-        print("POSLAL BY:", problem if problem else "nic, vše v pořádku")
+        print("POSLAL BY:", problem if problem else t["vse_ok"])
     elif problem:
-        posli(n, titulek, problem)
+        posli(n, t["titulek"].format(nazev=nazev), problem)
     return 0
 
 

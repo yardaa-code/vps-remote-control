@@ -1,6 +1,6 @@
 ---
 name: vps-remote-control
-description: Průvodce, který nováčka bez technických znalostí provede nastavením vlastního serveru (VPS), na kterém nonstop běží Claude Code s Remote Control, aby šlo Claude ovládat z mobilu i s vypnutým počítačem. Pokrývá objednání serveru (doporučený Forpsi), SSH klíč na Macu i Windows, zabezpečení, instalaci, přihlášení Claude, automatický restart a hlídání vypršení přihlášení (ntfy, Gmail nebo Resend). Použij, když uživatel chce „Claude na serveru“, „Claude z mobilu“, „Remote Control na VPS“, nebo chce pokračovat či opravit už nastavený server.
+description: Průvodce, který nováčka bez technických znalostí provede nastavením vlastního serveru (VPS), na kterém nonstop běží Claude Code s Remote Control, aby šlo Claude ovládat z mobilu i s vypnutým počítačem. Pokrývá objednání serveru (doporučený Forpsi), SSH klíč na Macu i Windows, zabezpečení, instalaci, přihlášení Claude, automatický restart, hlídání vypršení přihlášení (ntfy, Gmail nebo Resend) a volitelně propojení s GitHubem. Mluví jazykem uživatele (Use for English speakers too: "Claude on a server", "Remote Control on a VPS"). Použij, když uživatel chce „Claude na serveru“, „Claude z mobilu“, „Remote Control na VPS“, nebo chce pokračovat či opravit už nastavený server.
 ---
 
 # Claude Code s Remote Control na vlastním serveru
@@ -13,7 +13,9 @@ Ty děláš technickou práci, uživatel dělá jen to, co musí sám: objednáv
 Najdeš v ní `scripts/` (co se nahraje na server) a `reference/` (podrobné návody, čti je, až je potřebuješ).
 
 ## Jak mluvit s uživatelem
-- **Česky, krátce, bez žargonu.** Každý technický pojem jednou větou vysvětli („SSH je bezpečné připojení
+- **Jazykem uživatele** (podle toho, jak píše, výchozí čeština). Tyhle návody jsou česky, uživateli
+  je předávej v jeho jazyce. Příkazy, cesty a texty, které má najít na obrazovce, nepřekládej.
+- **Krátce, bez žargonu.** Každý technický pojem jednou větou vysvětli („SSH je bezpečné připojení
   na server“, „root je správce serveru, smí všechno“).
 - Jeden krok, pak počkej. Na konci kroku řekni, co je hotové a co přijde.
 - Když má něco udělat uživatel sám, napiš **přesně**, kam kliknout nebo co vložit, a proč to nejde za něj.
@@ -38,7 +40,8 @@ Najdeš v ní `scripts/` (co se nahraje na server) a `reference/` (podrobné ná
 ### 1. Objednat server
 Doporuč **Forpsi Classic VPS Mini+ se systémem Ubuntu 24.04** (cca 85 Kč/měsíc, cena z listopadu 2026,
 ať si ji ověří). Postup a na co dát pozor: `reference/forpsi.md`. Jiný poskytovatel funguje podobně,
-jen musí jít o **Ubuntu 24.04** a přístup jako root.
+jen musí jít o **Ubuntu 24.04** a přístup jako root. Uživateli mimo Česko doporuč poskytovatele
+ve své zemi nebo blízko (kratší odezva).
 
 Výsledek: **IP adresa serveru** (smí ji napsat do chatu) a **heslo roota** (do chatu ne, ať si ho uloží
 do správce hesel).
@@ -110,7 +113,14 @@ Ať uživatel otevře aplikaci Claude v mobilu a najde session ze serveru (sessi
 sessions Claude Code). Ať napíše něco jednoduchého, třeba „jaký je na serveru čas?“. Když session nevidí,
 `reference/problemy.md`.
 
-### 8. Na závěr uživateli řekni
+### 8. Propojit s GitHubem (volitelné)
+Zeptej se, jestli používá GitHub a chce, aby Claude na serveru pracoval s jeho projekty (stáhnout,
+upravit, uložit změny, otevřít pull request). Když ne, přeskoč. Když ano: `reference/github.md`
+(instalace `gh`, přihlášení kódem, anonymní e-mail pro commity, stažení projektu, ochrana větve `main`).
+
+Výsledek: `ssh claude-vps 'gh auth status'` ukáže přihlášený účet a projekt je v `~/projekty/`.
+
+### 9. Na závěr uživateli řekni
 - Jednou za ~4 týdny přijde upozornění. Pak stačí otevřít Claude Code v počítači a napsat
   „přihlas znovu Claude na serveru“ (tento skill, krok 4 a restart z `reference/prihlaseni.md`).
 - Odkaz na session se po každém restartu serveru i po nočním restartu změní, v aplikaci se objeví nová.

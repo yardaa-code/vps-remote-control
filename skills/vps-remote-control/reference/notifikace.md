@@ -4,7 +4,8 @@ Hlídač `~/bin/claude-hlidac.py` běží každý den v 9:00. Když je Claude od
 do 5 dní, pošle upozornění. Nastavení bez hesel je v `~/.config/claude-hlidac.json` (zapisuješ ty),
 heslo nebo klíč zvlášť v `~/.config/claude-hlidac-tajne` (zadává uživatel sám).
 
-`nazev_serveru` se objeví v titulku upozornění, dej třeba `"Forpsi"`.
+`nazev_serveru` se objeví v titulku upozornění, dej třeba `"Forpsi"`. Upozornění jsou česky,
+pro anglicky mluvícího uživatele přidej `"jazyk": "en"`.
 
 Nastavení zapiš takhle (příklad pro ntfy):
 ```bash

@@ -148,6 +148,27 @@ class Hlidac(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.spust()
 
+    # --- jazyk ---
+    def test_anglicke_upozorneni(self):
+        self.falesny_stav({"loggedIn": False})
+        self.nastav({"zpusob": "ntfy", "ntfy_tema": "t", "nazev_serveru": "Hetzner", "jazyk": "en"})
+        with mock.patch("urllib.request.urlopen") as u:
+            self.spust()
+        telo = json.loads(u.call_args[0][0].data)
+        self.assertEqual(telo["title"], "Claude on server Hetzner: login needed")
+        self.assertIn("LOGGED OUT", telo["message"])
+
+    def test_anglicky_stav_vyprseni(self):
+        self.falesny_stav(self.vyprsi_za(3))
+        problem, _ = self.h.stav(self.h.TEXTY["en"])
+        self.assertIn("expires in 3 days", problem)
+
+    def test_neznamy_jazyk_je_cesky(self):
+        self.assertIs(self.h.texty({"jazyk": "xx"}), self.h.TEXTY["cs"])
+
+    def test_jazyky_maji_stejne_texty(self):
+        self.assertEqual(self.h.TEXTY["cs"].keys(), self.h.TEXTY["en"].keys())
+
     # --- uložení hesla ---
     def test_uloz_heslo_jen_pro_vlastnika(self):
         with mock.patch("getpass.getpass", return_value=" tajne "):
