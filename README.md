@@ -1,5 +1,21 @@
 # vps-remote-control
 
+**English:** A Claude Code skill that walks a complete beginner through setting up their own small server
+(VPS) running Claude Code 24/7 with **Remote Control**, so you can use Claude from the mobile app even
+with your computer switched off. It covers SSH keys (Mac and Windows), basic hardening (key-only login,
+firewall, fail2ban, no root), a service that restarts Claude after a crash, a nightly restart, and a daily
+check that warns you before the Claude login expires (via ntfy, Gmail or Resend). Claude does the
+technical work, you only order the server and log in.
+
+**Note:** the guide is written in Czech and recommends a Czech provider (Forpsi Classic VPS Mini+,
+Ubuntu 24.04). Any VPS with Ubuntu 24.04 and root access works.
+
+Install: tell Claude Code *"Install the skill from https://github.com/yardaa-code/vps-remote-control"*,
+or run `/plugin marketplace add yardaa-code/vps-remote-control` and
+`/plugin install vps-remote-control@vps-remote-control`. MIT licence.
+
+---
+
 Skill pro Claude Code, který tě krok za krokem provede nastavením **vlastního malého serveru**, na kterém
 nonstop běží Claude Code s **Remote Control**. Claude pak můžeš ovládat z aplikace v mobilu, i když máš
 počítač vypnutý. Nemusíš umět programovat ani spravovat servery, technickou práci udělá Claude za tebe.
