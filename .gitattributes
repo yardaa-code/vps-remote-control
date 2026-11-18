@@ -1,0 +1,6 @@
+# Konce řádků LF i na Windows. Git for Windows má core.autocrlf=true a skripty by pak
+# na Ubuntu serveru spadly na „$'\r': command not found“.
+*.sh   text eol=lf
+*.py   text eol=lf
+*.json text eol=lf
+*.md   text eol=lf

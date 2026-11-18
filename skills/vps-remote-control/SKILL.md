@@ -23,14 +23,29 @@ Najdeš v ní `scripts/` (co se nahraje na server) a `reference/` (podrobné ná
   (krok 4), který je k ničemu hned po použití. Heslo roota a heslo do Gmailu/Resendu zadává uživatel
   sám ve svém terminálu.
 - Buď poctivý: když něco nevyšlo, řekni co a proč, pak navrhni opravu. Návod `reference/problemy.md`.
+- Dnešní datum (do záznamu o stavu, výpočet, kdy vyprší přihlášení) ber z příkazu `date`, ne z hlavy.
+
+## Záznam o stavu
+V počítači uživatele veď krátký soubor `~/.claude-vps/STAV.md`, aby další konverzace (třeba za 4 týdny
+při novém přihlášení) věděla, kde jste. Založ ho po kroku 1 a doplňuj po každém hotovém kroku:
+- poskytovatel a IP adresa serveru, systém počítače (Mac / Windows),
+- hotové kroky (1–8) a co je rozpracované,
+- zvolené upozornění (ntfy / Gmail / Resend), GitHub ano/ne,
+- **datum posledního přihlášení Claude na serveru a odhad dalšího** (+28 dní).
+
+Žádná hesla, kódy ani klíče. Stav na serveru má vždy přednost: když se se záznamem neshoduje, záznam oprav.
 
 ## Nejdřív zjisti, kde jste
 1. **Systém počítače:** Mac, nebo Windows? (Na Windows běží tvoje příkazy v Git Bash, takže `ssh`, `scp`
    a cesty `~/.ssh/...` fungují stejně jako na Macu. Liší se jen kroky, které dělá uživatel ve svém
    terminálu, viz `reference/ssh-klic.md`.)
-2. **Rozpracováno?** Když `~/.ssh/config` obsahuje `Host claude-vps`, server už existuje. Zkus
-   `ssh -o BatchMode=yes claude-vps 'ls ~/bin; ~/.local/bin/claude auth status; screen -ls'`
+2. **Rozpracováno?** Nejdřív přečti `~/.claude-vps/STAV.md` (viz „Záznam o stavu“), pak ověř server.
+   Když `~/.ssh/config` obsahuje `Host claude-vps`, server už existuje. Zkus
+   `ssh -o BatchMode=yes claude-vps 'ls ~/bin; cat ~/bin/VERZE; ~/.local/bin/claude auth status; screen -ls'`
    a pokračuj od prvního nehotového kroku. Instalační skript jde bez obav spustit znovu.
+   **Verze:** porovnej `~/bin/VERZE` na serveru se `SKILL_DIR/scripts/VERZE`. Chybí-li, nebo je starší,
+   řekni jednou větou, že je nová verze skillu, a nabídni aktualizaci serveru: znovu krok 3 (nahrát
+   skripty a spustit instalaci; přihlášení, upozornění i projekty zůstanou). Odmítne-li, připomeň to až příště.
 3. **Co bude potřeba** (řekni předem): placené předplatné Claude (Remote Control musí být v jeho plánu
    k dispozici, ověř na claude.com), aplikace Claude v mobilu, asi **85 Kč měsíčně** za server,
    zhruba hodina času. Jednou za ~4 týdny je pak potřeba Claude na serveru znovu přihlásit (5 minut).
@@ -74,7 +89,10 @@ neobjeví `HOTOVO` nebo `CHYBA`. Uživateli mezitím vysvětli, co skript dělá
 - nainstaluje Claude Code (aktualizuje se pak sám),
 - nastaví službu `claude-remote`, která drží Claude spuštěný a po pádu ho do 20 s nahodí,
   se stropem paměti 700 MB,
-- nastaví noční restart ve 4:00 (paměť Claude s časem roste) a hlídače přihlášení v 9:00.
+- nastaví noční restart ve 4:00 (paměť Claude s časem roste, bez restartu jednou narazila na strop
+  a Claude spadl) a hlídače přihlášení v 9:00,
+- dá Claude na serveru pravidla (`~/.claude/CLAUDE.md`: bez roota, nic důležitého na server, jak se
+  restartovat). Existující soubor nepřepíše.
 
 Při `CHYBA` přečti celý log a postupuj podle `reference/problemy.md`.
 Ověření: `ssh -o BatchMode=yes claude-vps 'echo OK'` (už jako `claude`) vypíše `OK`.
@@ -97,7 +115,8 @@ Výsledek: v okně (`hardcopy`) je `/remote-control is active`.
 
 ### 6. Upozornění, když přihlášení vyprší
 Přihlášení vyprší zhruba po 28 dnech a Remote Control pak **potichu přestane fungovat**. Bez upozornění
-na to uživatel přijde až po týdnech. Nabídni tři možnosti a doporuč první:
+na to uživatel přijde až po týdnech. (Skutečná chyba: na serveru autora skillu Remote Control bez
+upozornění nefungoval přes dva týdny, než si toho všiml.) Nabídni tři možnosti a doporuč první:
 
 | | Co to je | Pro koho |
 |---|---|---|
@@ -120,7 +139,8 @@ upravit, uložit změny, otevřít pull request). Když ne, přeskoč. Když ano
 
 Výsledek: `ssh claude-vps 'gh auth status'` ukáže přihlášený účet a projekt je v `~/projekty/`.
 
-### 9. Na závěr uživateli řekni
+### 9. Na závěr
+Zapiš do `~/.claude-vps/STAV.md`, že je vše hotové, a datum dalšího přihlášení. Pak uživateli řekni:
 - Jednou za ~4 týdny přijde upozornění. Pak stačí otevřít Claude Code v počítači a napsat
   „přihlas znovu Claude na serveru“ (tento skill, krok 4 a restart z `reference/prihlaseni.md`).
 - Odkaz na session se po každém restartu serveru i po nočním restartu změní, v aplikaci se objeví nová.
@@ -128,10 +148,39 @@ Výsledek: `ssh claude-vps 'gh auth status'` ukáže přihlášený účet a pro
   `ssh claude-vps-root reboot` (Claude se po startu spustí sám).
 - Server je jen pro Claude. Nedávat na něj nic důležitého.
 
+## Poznámky pro autora skillu
+Skill se zlepšuje podle zkušeností lidí, kteří ho používají. **Průběžně zapisuj do
+`~/.claude-vps/poznamky_pro_skill.md`**, co by se mělo zlepšit:
+- chyby skriptů a návodů (příkaz, co se stalo, co jsi čekal, jak jsi to obešel),
+- pasti, o kterých návod mlčí, **zvlášť na Windows** a u jiných poskytovatelů než Forpsi,
+- co uživatel chtěl, ale skill to neuměl.
+
+Piš obecně a stručně: postup, ne údaje uživatele (žádné IP adresy, jména, e-maily, hesla, kódy).
+**Ve vhodnou chvíli nabídni, ať poznámky pošle autorovi** (na konci instalace, když je v nich chyba,
+jinak nanejvýš jednou za pár sezení). Poznámky se posílají jako hlášení na GitHubu (issue):
+1. Projdi poznámky a odstraň osobní údaje.
+2. Vypiš je do chatu celé, jako jeden blok ke zkopírování.
+3. Ať uživatel otevře https://github.com/yardaa-code/vps-remote-control/issues/new, vloží je a odešle
+   (potřebuje účet na GitHubu). Řekni proč: autor opravy zapracuje a dostanou je i ostatní.
+
+**Nic sám neodesílej** (ani přes `gh`). Až uživatel řekne, že poslal, zapiš do souboru „odesláno <datum>“
+a další poznámky piš pod tuto čáru.
+
+## Co nikdy
+- Nechtěj do chatu hesla, klíče ani hesla do e-mailu (jedinou výjimkou je jednorázový kód z kroku 4).
+- Nespouštěj Claude na serveru jako root a nedávej účtu `claude` sudo.
+- Nepouštěj skript přes `ssh … 'bash -s' < skript` (viz krok 3).
+- Nemačkej ve screen Enter naslepo, vždy nejdřív přečti okno (viz „Quick safety check“).
+- Nezapínej zpět přihlašování heslem, nevypínej firewall ani fail2ban.
+- Neobjednávej ani neplať za uživatele, nezadávej za něj platební údaje.
+- Nedávej na server nic důležitého a nemaž ho bez výslovného souhlasu uživatele.
+
 ## Jména a cesty (pro tebe)
 - `claude-vps` = server jako účet `claude` (běžná práce), `claude-vps-root` = jako root (jen instalace,
   `systemctl`, `reboot`). Obojí v `~/.ssh/config` u uživatele, klíč `~/.ssh/claude_vps`.
 - Na serveru: `~/.local/bin/claude`, služba `claude-remote` (soubor `/etc/systemd/system/claude-remote.service`),
   screen session `claude`, skripty `~/bin/claude-nocni-restart.sh` a `~/bin/claude-hlidac.py`,
-  nastavení hlídače `~/.config/claude-hlidac.json`.
+  nastavení hlídače `~/.config/claude-hlidac.json`, verze `~/bin/VERZE`, pravidla `~/.claude/CLAUDE.md`
+  (šablona `scripts/CLAUDE-server.md`).
 - Restart Claude bez roota: `screen -S claude -X quit` (služba ho do 20 s spustí znovu).
+- V počítači uživatele: `~/.claude-vps/STAV.md` (záznam o stavu), `~/.claude-vps/poznamky_pro_skill.md`.
