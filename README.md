@@ -68,5 +68,7 @@ Po instalaci restartuj Claude Code a napiš třeba **„chci Claude na serveru, 
 - `skills/vps-remote-control/SKILL.md`: průvodce pro Claude, `reference/`: podrobné návody,
   `scripts/`: co se nahraje na server.
 - Testy hlídače: `python3 -m unittest discover testy`.
+- Verze: při změně skriptů zvyš číslo v `skills/vps-remote-control/scripts/VERZE` i v
+  `.claude-plugin/plugin.json` (stejné). Skill podle ní nabídne uživatelům aktualizaci serveru.
 
 Licence MIT.

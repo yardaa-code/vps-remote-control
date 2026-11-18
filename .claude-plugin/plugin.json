@@ -1,6 +1,6 @@
 {
   "name": "vps-remote-control",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Průvodce nastavením vlastního serveru, na kterém nonstop běží Claude Code s Remote Control (ovládání z mobilu).",
   "author": {
     "name": "yardaa-code"

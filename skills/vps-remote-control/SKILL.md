@@ -29,8 +29,11 @@ Najdeš v ní `scripts/` (co se nahraje na server) a `reference/` (podrobné ná
    a cesty `~/.ssh/...` fungují stejně jako na Macu. Liší se jen kroky, které dělá uživatel ve svém
    terminálu, viz `reference/ssh-klic.md`.)
 2. **Rozpracováno?** Když `~/.ssh/config` obsahuje `Host claude-vps`, server už existuje. Zkus
-   `ssh -o BatchMode=yes claude-vps 'ls ~/bin; ~/.local/bin/claude auth status; screen -ls'`
+   `ssh -o BatchMode=yes claude-vps 'ls ~/bin; cat ~/bin/VERZE; ~/.local/bin/claude auth status; screen -ls'`
    a pokračuj od prvního nehotového kroku. Instalační skript jde bez obav spustit znovu.
+   **Verze:** porovnej `~/bin/VERZE` na serveru se `SKILL_DIR/scripts/VERZE`. Chybí-li, nebo je starší,
+   řekni jednou větou, že je nová verze skillu, a nabídni aktualizaci serveru: znovu krok 3 (nahrát
+   skripty a spustit instalaci; přihlášení, upozornění i projekty zůstanou). Odmítne-li, připomeň to až příště.
 3. **Co bude potřeba** (řekni předem): placené předplatné Claude (Remote Control musí být v jeho plánu
    k dispozici, ověř na claude.com), aplikace Claude v mobilu, asi **85 Kč měsíčně** za server,
    zhruba hodina času. Jednou za ~4 týdny je pak potřeba Claude na serveru znovu přihlásit (5 minut).
@@ -74,7 +77,9 @@ neobjeví `HOTOVO` nebo `CHYBA`. Uživateli mezitím vysvětli, co skript dělá
 - nainstaluje Claude Code (aktualizuje se pak sám),
 - nastaví službu `claude-remote`, která drží Claude spuštěný a po pádu ho do 20 s nahodí,
   se stropem paměti 700 MB,
-- nastaví noční restart ve 4:00 (paměť Claude s časem roste) a hlídače přihlášení v 9:00.
+- nastaví noční restart ve 4:00 (paměť Claude s časem roste) a hlídače přihlášení v 9:00,
+- dá Claude na serveru pravidla (`~/.claude/CLAUDE.md`: bez roota, nic důležitého na server, jak se
+  restartovat). Existující soubor nepřepíše.
 
 Při `CHYBA` přečti celý log a postupuj podle `reference/problemy.md`.
 Ověření: `ssh -o BatchMode=yes claude-vps 'echo OK'` (už jako `claude`) vypíše `OK`.
@@ -133,5 +138,6 @@ Výsledek: `ssh claude-vps 'gh auth status'` ukáže přihlášený účet a pro
   `systemctl`, `reboot`). Obojí v `~/.ssh/config` u uživatele, klíč `~/.ssh/claude_vps`.
 - Na serveru: `~/.local/bin/claude`, služba `claude-remote` (soubor `/etc/systemd/system/claude-remote.service`),
   screen session `claude`, skripty `~/bin/claude-nocni-restart.sh` a `~/bin/claude-hlidac.py`,
-  nastavení hlídače `~/.config/claude-hlidac.json`.
+  nastavení hlídače `~/.config/claude-hlidac.json`, verze `~/bin/VERZE`, pravidla `~/.claude/CLAUDE.md`
+  (šablona `scripts/CLAUDE-server.md`).
 - Restart Claude bez roota: `screen -S claude -X quit` (služba ho do 20 s spustí znovu).

@@ -73,12 +73,23 @@ fi
 krok "Pomocné skripty a cron (4:00 restart, 9:00 hlídač přihlášení)"
 install -d -o "$U" -g "$U" "/home/$U/bin"
 install -m 755 -o "$U" -g "$U" "$D/claude-nocni-restart.sh" "$D/claude-hlidac.py" "/home/$U/bin/"
+# Verze skillu, ze které je server nastavený (skill ji porovná a nabídne aktualizaci).
+install -m 644 -o "$U" -g "$U" "$D/VERZE" "/home/$U/bin/VERZE"
 crontab -u "$U" - <<EOF
 # Noční restart Claude (čistí paměť), služba ho do 20 s spustí znovu
 0 4 * * * /home/$U/bin/claude-nocni-restart.sh
 # Denní kontrola přihlášení Claude, při problému pošle upozornění
 0 9 * * * /home/$U/bin/claude-hlidac.py
 EOF
+
+krok "Pravidla pro Claude na serveru (~/.claude/CLAUDE.md)"
+install -d -o "$U" -g "$U" "/home/$U/.claude"
+# Jen když chybí, ať se nepřepíšou vlastní úpravy uživatele.
+if [ -e "/home/$U/.claude/CLAUDE.md" ]; then
+  echo "už existuje, nechávám beze změny"
+else
+  install -m 644 -o "$U" -g "$U" "$D/CLAUDE-server.md" "/home/$U/.claude/CLAUDE.md"
+fi
 
 krok "Služba claude-remote (spustí Claude ve screen, po pádu ho nahodí)"
 cat > /etc/systemd/system/claude-remote.service <<EOF
